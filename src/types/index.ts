@@ -107,6 +107,51 @@ export interface SMSDetailResponse {
   sms_rawlogs: SMSRawLogs;
 }
 
+// Batch Analysis Types
+export interface BatchMeta {
+  lead_source_filter: string;
+  lead_sources_available: string[];
+  record_counts: {
+    sms_rawlogs: number;
+    sms_inbound: number;
+    rvm_rawlogs: number;
+    filtered_sms: number;
+    filtered_rvm: number;
+  };
+}
+
+export interface SMSCampaignStat {
+  total_sent: number;
+  total_cost: number;
+  inbound_replies: number;
+  reply_rate_pct: number;
+  cost_per_reply: number;
+  carrier_breakdown: Record<string, number>;
+}
+
+export interface RVMCampaignStat {
+  total_sent: number;
+  success: number;
+  failure: number;
+  queued: number;
+  total_cost: number;
+  success_rate_pct: number;
+  failure_reasons: Record<string, number>;
+}
+
+export interface SMSSenderNumber {
+  from: string;
+  total_sent: number;
+  status_breakdown: Record<string, number>;
+}
+
+export interface BatchAnalysisData {
+  meta: BatchMeta;
+  sms_campaign_performance: Record<string, SMSCampaignStat>;
+  rvm_campaign_performance: Record<string, RVMCampaignStat>;
+  sms_sender_numbers: SMSSenderNumber[];
+}
+
 // Chart data types
 export interface ChartDataPoint {
   name: string;

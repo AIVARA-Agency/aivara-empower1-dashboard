@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, MessageSquare, X, Menu } from "lucide-react";
+import { LayoutDashboard, MessageSquare, Layers, X, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -17,6 +17,11 @@ const navItems = [
     label: "SMS Logs",
     href: "/sms",
     icon: MessageSquare,
+  },
+  {
+    label: "Batch Status",
+    href: "/batch",
+    icon: Layers,
   },
 ];
 
