@@ -4,23 +4,31 @@ import { useState, useEffect, useCallback } from "react";
 import type { BatchAnalysisData } from "@/types";
 
 const BATCH_API = "/api/batch";
+const REFRESH_INTERVAL = 600_000; // 10 minutes
 
 interface UseBatchReturn {
   data: BatchAnalysisData | null;
   error: string | null;
   isLoading: boolean;
+  isRefreshing: boolean;
+  lastUpdated: Date | null;
   leadSource: string;
   setLeadSource: (source: string) => void;
+  refresh: () => void;
 }
 
 export function useBatch(): UseBatchReturn {
   const [data, setData] = useState<BatchAnalysisData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [leadSource, setLeadSource] = useState<string>("all");
 
-  const fetchData = useCallback(async (source: string) => {
-    setIsLoading(true);
+  const fetchData = useCallback(async (source: string, isManualRefresh = false) => {
+    if (isManualRefresh) {
+      setIsRefreshing(true);
+    }
     setError(null);
 
     try {
@@ -40,16 +48,30 @@ export function useBatch(): UseBatchReturn {
       };
 
       setData(normalized);
+      setLastUpdated(new Date());
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to fetch data");
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
   }, []);
 
+  // Initial load + re-fetch on lead source change
   useEffect(() => {
+    setIsLoading(true);
     fetchData(leadSource);
   }, [fetchData, leadSource]);
 
-  return { data, error, isLoading, leadSource, setLeadSource };
+  // Auto-refresh every 10 minutes
+  useEffect(() => {
+    const timer = setInterval(() => fetchData(leadSource, false), REFRESH_INTERVAL);
+    return () => clearInterval(timer);
+  }, [fetchData, leadSource]);
+
+  const refresh = useCallback(() => {
+    fetchData(leadSource, true);
+  }, [fetchData, leadSource]);
+
+  return { data, error, isLoading, isRefreshing, lastUpdated, leadSource, setLeadSource, refresh };
 }

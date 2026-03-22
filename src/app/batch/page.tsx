@@ -1,6 +1,7 @@
 "use client";
 
 import { Sidebar } from "@/components/layout/sidebar";
+import { Header } from "@/components/layout/header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,7 +27,7 @@ function cleanLabel(key: string) {
 }
 
 export default function BatchPage() {
-  const { data, error, isLoading, leadSource, setLeadSource } = useBatch();
+  const { data, error, isLoading, isRefreshing, lastUpdated, refresh, leadSource, setLeadSource } = useBatch();
 
   const availableSources = data?.meta?.lead_sources_available ?? [];
 
@@ -37,7 +38,10 @@ export default function BatchPage() {
       </div>
 
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-        {/* Page Header */}
+        {/* Top bar — mobile nav + refresh + theme toggle */}
+        <Header lastUpdated={lastUpdated} onRefresh={refresh} isRefreshing={isRefreshing} />
+
+        {/* Page sub-header — title + lead source filter */}
         <div className="flex items-center justify-between px-4 lg:px-6 py-4 border-b border-[var(--border)] shrink-0">
           <div>
             <h1 className="text-xl font-semibold">Batch Status</h1>

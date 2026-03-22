@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import type { DashboardData } from "@/types";
 
 const DASHBOARD_API = "/api/dashboard";
-const REFRESH_INTERVAL = 60_000; // 60 seconds
+const REFRESH_INTERVAL = 600_000; // 10 minutes
 
 interface UseDashboardReturn {
   data: DashboardData | null;
