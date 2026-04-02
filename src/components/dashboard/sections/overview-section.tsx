@@ -74,9 +74,9 @@ export function OverviewSection({ data, isLoading }: Props) {
   const rvmMonths = Object.entries(rvmRawlogs.month_breakdown).sort(([a], [b]) => a.localeCompare(b));
   const smsMonths = Object.entries(smsRawlogs.month_breakdown).sort(([a], [b]) => a.localeCompare(b));
   const inboundMonths = Object.entries(smsInbound.month_breakdown).sort(([a], [b]) => a.localeCompare(b));
-  const dealsMonths = Object.entries(forthDeals.month_breakdown).sort(([a], [b]) => a.localeCompare(b));
+  const dealsMonths = [...forthDeals.deals_by_month].sort((a, b) => a.period.localeCompare(b.period));
 
-  const totalRevenue = forthDeals.total_debt_revenue + forthDeals.total_payment_revenue;
+  const totalRevenue = forthDeals.summary.total_revenue;
 
   return (
     <section id="overview" className="space-y-6">
@@ -128,7 +128,7 @@ export function OverviewSection({ data, isLoading }: Props) {
           <StatsCard
             title="Forth Deals Revenue"
             value={fmtCurrency(totalRevenue)}
-            subtitle={`${forthDeals.total_deals} total deals`}
+            subtitle={`${forthDeals.summary.total_deals} total deals`}
             icon={DollarSign}
             iconClassName="bg-green-100 text-green-600"
           />
@@ -217,14 +217,9 @@ export function OverviewSection({ data, isLoading }: Props) {
         />
         <MonthTable
           title="Forth Deals — Monthly"
-          description="Deals, debt, and revenue per month"
-          columns={["Deals", "Debt Revenue", "Payment Rev."]}
-          rows={dealsMonths.map(([m, e]) => [
-            m,
-            String(e.deals),
-            fmtCurrency(e.debt_revenue),
-            fmtCurrency(e.payment_revenue),
-          ])}
+          description="Deals and revenue per month"
+          columns={["Deals", "Revenue"]}
+          rows={dealsMonths.map((e) => [e.period, String(e.total_deals), fmtCurrency(e.total_revenue)])}
         />
       </div>
     </section>

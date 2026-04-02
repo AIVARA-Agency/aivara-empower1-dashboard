@@ -4,7 +4,7 @@ import {
   PieChart, Pie, Cell, BarChart, Bar, AreaChart, Area,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
-import { DollarSign, TrendingUp, Users, CreditCard, Banknote } from "lucide-react";
+import { DollarSign, TrendingUp, CreditCard, Banknote } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { StatsCard } from "@/components/dashboard/stats-card";
@@ -19,9 +19,6 @@ const TOOLTIP_STYLE = {
   fontSize: "0.75rem",
 };
 
-function fmt(n: number) {
-  return n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1_000 ? `${(n / 1_000).toFixed(1)}K` : String(n);
-}
 function fmtCurrency(n: number) {
   return `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
@@ -37,9 +34,9 @@ export function ForthDealsSection({ data, isLoading }: Props) {
   if (isLoading) {
     return (
       <section id="forth-deals" className="space-y-6">
-        <SectionHeading title="Forth Deals" subtitle="Deal pipeline, debt, and revenue overview" />
-        <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
-          {Array.from({ length: 5 }).map((_, i) => (
+        <SectionHeading title="Forth Deals" subtitle="Deal pipeline and revenue overview" />
+        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
             <Card key={i}><CardContent className="pt-6"><Skeleton className="h-20 w-full" /></CardContent></Card>
           ))}
         </div>
@@ -48,65 +45,77 @@ export function ForthDealsSection({ data, isLoading }: Props) {
   }
 
   const { forthDeals } = data;
+  const { summary, deals_by_month, revenue_by_month, revenue_by_lead_source, revenue_by_deal_type } = forthDeals;
 
-  // Lead source pie
-  const leadSourceData = Object.entries(forthDeals.lead_source_breakdown).map(([name, value]) => ({ name, value }));
+  // Sort month arrays
+  const dealsByMonth = [...deals_by_month].sort((a, b) => a.period.localeCompare(b.period));
+  const revenueByMonth = [...revenue_by_month].sort((a, b) => a.period.localeCompare(b.period));
 
-  // Monthly data
-  const monthData = Object.entries(forthDeals.month_breakdown)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([month, e]) => ({
-      month,
-      Deals: e.deals,
-      "Debt Revenue": e.debt_revenue,
-      "Payment Revenue": e.payment_revenue,
-      "Debt Amount": e.current_debt_amount,
-      "Current Payment": e.current_payment,
-    }));
+  // Combined monthly chart data
+  const monthData = dealsByMonth.map((d) => {
+    const rev = revenueByMonth.find((r) => r.period === d.period);
+    return {
+      month: d.period,
+      Deals: d.total_deals,
+      Revenue: rev?.gross_revenue ?? 0,
+    };
+  });
 
-  const totalRevenue = forthDeals.total_debt_revenue + forthDeals.total_payment_revenue;
+  // Lead source pie (by revenue)
+  const leadSourceData = revenue_by_lead_source.map((e) => ({
+    name: e.lead_source,
+    value: e.gross_revenue,
+  }));
+
+  // Deal type bar
+  const dealTypeData = revenue_by_deal_type
+    .filter((e) => e.gross_revenue > 0)
+    .sort((a, b) => b.gross_revenue - a.gross_revenue)
+    .map((e) => ({ name: e.deal_type, value: e.gross_revenue }));
 
   return (
     <section id="forth-deals" className="space-y-6">
-      <SectionHeading title="Forth Deals" subtitle="Deal pipeline, debt, and revenue overview" />
+      <SectionHeading title="Forth Deals" subtitle="Deal pipeline and revenue overview" />
 
-      {/* Stats */}
-      <div className="grid grid-cols-2 xl:grid-cols-5 gap-4">
-        <StatsCard title="Total Deals" value={String(forthDeals.total_deals)}
-          subtitle="All processed deals" icon={TrendingUp} iconClassName="bg-violet-100 text-violet-600" />
-        <StatsCard title="Total Debt Amount" value={fmtCurrency(forthDeals.total_current_debt_amount)}
-          subtitle="Current client debt" icon={CreditCard} iconClassName="bg-red-100 text-red-600" />
-        <StatsCard title="Debt Revenue" value={fmtCurrency(forthDeals.total_debt_revenue)}
-          subtitle="Revenue from debt" icon={DollarSign} iconClassName="bg-teal-100 text-teal-600" />
-        <StatsCard title="Current Payment" value={fmtCurrency(forthDeals.total_current_payment)}
-          subtitle="Client payment amounts" icon={Banknote} iconClassName="bg-amber-100 text-amber-600" />
-        <StatsCard title="Payment Revenue" value={fmtCurrency(forthDeals.total_payment_revenue)}
-          subtitle={`Total revenue: ${fmtCurrency(totalRevenue)}`} icon={Users} iconClassName="bg-green-100 text-green-600" />
+      {/* Summary stats */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
+        <StatsCard
+          title="Total Deals"
+          value={String(summary.total_deals)}
+          subtitle="All processed deals"
+          icon={TrendingUp}
+          iconClassName="bg-violet-100 text-violet-600"
+        />
+        <StatsCard
+          title="Total Debt"
+          value={fmtCurrencyShort(summary.total_debt)}
+          subtitle="Current client debt"
+          icon={CreditCard}
+          iconClassName="bg-red-100 text-red-600"
+        />
+        <StatsCard
+          title="Current Payments"
+          value={fmtCurrency(summary.total_current_payments)}
+          subtitle="Client payment amounts"
+          icon={Banknote}
+          iconClassName="bg-amber-100 text-amber-600"
+        />
+        <StatsCard
+          title="Total Revenue"
+          value={fmtCurrencyShort(summary.total_revenue)}
+          subtitle="Gross revenue across all deals"
+          icon={DollarSign}
+          iconClassName="bg-green-100 text-green-600"
+        />
       </div>
 
       {/* Charts row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-sm font-semibold">Lead Source Breakdown</CardTitle>
-            <CardDescription className="text-xs">Deals by lead origin</CardDescription>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center">
-            <ResponsiveContainer width="100%" height={220}>
-              <PieChart>
-                <Pie data={leadSourceData} cx="50%" cy="50%" outerRadius={80} dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`} labelLine>
-                  {leadSourceData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                </Pie>
-                <Tooltip contentStyle={TOOLTIP_STYLE} />
-              </PieChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
+        {/* Monthly deals bar */}
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-semibold">Monthly Deals Volume</CardTitle>
+            <CardDescription className="text-xs">Number of deals closed per month</CardDescription>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={220}>
@@ -120,23 +129,43 @@ export function ForthDealsSection({ data, isLoading }: Props) {
             </ResponsiveContainer>
           </CardContent>
         </Card>
+
+        {/* Lead source pie */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold">Revenue by Lead Source</CardTitle>
+            <CardDescription className="text-xs">Gross revenue breakdown by origin</CardDescription>
+          </CardHeader>
+          <CardContent className="flex items-center justify-center">
+            <ResponsiveContainer width="100%" height={220}>
+              <PieChart>
+                <Pie
+                  data={leadSourceData}
+                  cx="50%" cy="50%" outerRadius={80}
+                  dataKey="value"
+                  label={({ name, value }) => `${name}: ${fmtCurrencyShort(value as number)}`}
+                  labelLine
+                >
+                  {leadSourceData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                </Pie>
+                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => fmtCurrency(v)} />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Revenue area chart */}
+      {/* Monthly revenue area chart */}
       <Card>
         <CardHeader>
           <CardTitle className="text-sm font-semibold">Monthly Revenue Trend</CardTitle>
-          <CardDescription className="text-xs">Debt revenue vs payment revenue over time</CardDescription>
+          <CardDescription className="text-xs">Gross revenue over time</CardDescription>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart data={monthData} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
+          <ResponsiveContainer width="100%" height={240}>
+            <AreaChart data={revenueByMonth.map((r) => ({ month: r.period, Revenue: r.gross_revenue }))} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
               <defs>
-                <linearGradient id="debtRevGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#64b5d0" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#64b5d0" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="payRevGrad" x1="0" y1="0" x2="0" y2="1">
+                <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#6ec6a0" stopOpacity={0.3} />
                   <stop offset="95%" stopColor="#6ec6a0" stopOpacity={0} />
                 </linearGradient>
@@ -145,34 +174,110 @@ export function ForthDealsSection({ data, isLoading }: Props) {
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
               <YAxis tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} tickFormatter={fmtCurrencyShort} />
               <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => fmtCurrency(v)} />
-              <Legend wrapperStyle={{ fontSize: 11 }} />
-              <Area type="monotone" dataKey="Debt Revenue" stroke="#64b5d0" fill="url(#debtRevGrad)" strokeWidth={2} />
-              <Area type="monotone" dataKey="Payment Revenue" stroke="#6ec6a0" fill="url(#payRevGrad)" strokeWidth={2} />
+              <Area type="monotone" dataKey="Revenue" stroke="#6ec6a0" fill="url(#revGrad)" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
+      {/* Deal type breakdown */}
+      {dealTypeData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-semibold">Revenue by Deal Type</CardTitle>
+            <CardDescription className="text-xs">Gross revenue per deal category</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={Math.max(140, dealTypeData.length * 52)}>
+              <BarChart data={dealTypeData} layout="vertical" margin={{ left: 8, right: 24 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                <XAxis type="number" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} tickFormatter={fmtCurrencyShort} />
+                <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} width={120} />
+                <Tooltip contentStyle={TOOLTIP_STYLE} formatter={(v: number) => fmtCurrency(v)} />
+                <Bar dataKey="value" name="Revenue" radius={[0, 3, 3, 0]}>
+                  {dealTypeData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Per-month detail cards */}
       <div>
         <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">Monthly Detail</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-          {monthData.map((m) => (
-            <Card key={m.month}>
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          {dealsByMonth.map((d) => (
+            <Card key={d.period}>
               <CardHeader className="pb-2">
-                <CardTitle className="text-xs font-bold text-[var(--primary)]">{m.month}</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-sm font-bold text-[var(--primary)]">{d.period}</CardTitle>
+                  <span className="text-xs font-semibold text-[var(--muted-foreground)]">
+                    {d.total_deals} deal{d.total_deals !== 1 ? "s" : ""} · {fmtCurrencyShort(d.total_revenue)}
+                  </span>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-1.5 text-xs">
-                <Row label="Deals" value={String(m.Deals)} />
-                <Row label="Debt Amount" value={fmtCurrency(m["Debt Amount"] as number)} />
-                <Row label="Debt Revenue" value={fmtCurrency(m["Debt Revenue"] as number)} />
-                <Row label="Payment" value={fmtCurrency(m["Current Payment"] as number)} />
-                <Row label="Pay Revenue" value={fmtCurrency(m["Payment Revenue"] as number)} />
+              <CardContent className="space-y-3 text-xs">
+                {/* By deal type */}
+                {d.by_deal_type.length > 0 && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-[var(--muted-foreground)] mb-1.5">By Deal Type</p>
+                    <div className="space-y-1">
+                      {d.by_deal_type.filter((t) => t.total_deals > 0).map((t) => (
+                        <div key={t.deal_type} className="flex justify-between items-center">
+                          <span className="text-[var(--muted-foreground)] truncate max-w-[55%]">{t.deal_type}</span>
+                          <span className="font-medium tabular-nums">
+                            {t.total_deals} · {fmtCurrencyShort(t.total_revenue)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* By lead source */}
+                {d.by_source_lead.length > 0 && (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-[var(--muted-foreground)] mb-1.5">By Lead Source</p>
+                    <div className="space-y-1">
+                      {d.by_source_lead.map((s) => (
+                        <div key={s.source_lead} className="flex justify-between items-center">
+                          <span className="text-[var(--muted-foreground)] truncate max-w-[55%]">{s.source_lead}</span>
+                          <span className="font-medium tabular-nums">
+                            {s.total_deals} · {fmtCurrencyShort(s.total_revenue)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
       </div>
+
+      {/* Lead source detail */}
+      {revenue_by_lead_source.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">Revenue by Lead Source</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {revenue_by_lead_source.map((e, i) => (
+              <Card key={e.lead_source}>
+                <CardContent className="pt-4 flex items-center gap-3">
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }}
+                  />
+                  <div className="min-w-0">
+                    <p className="text-xs text-[var(--muted-foreground)] truncate">{e.lead_source}</p>
+                    <p className="text-sm font-semibold">{fmtCurrency(e.gross_revenue)}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </section>
   );
 }
@@ -194,6 +299,3 @@ function SectionHeading({ title, subtitle }: { title: string; subtitle: string }
     </div>
   );
 }
-
-// Keep fmt to avoid lint warning
-void fmt;

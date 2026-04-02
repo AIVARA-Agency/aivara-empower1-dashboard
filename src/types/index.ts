@@ -75,24 +75,56 @@ export interface RawSmsInbound {
   createdAt: string;
 }
 
-export interface ForthDealsMonthEntry {
-  deals: number;
-  current_debt_amount: number;
-  debt_revenue: number;
-  current_payment: number;
-  payment_revenue: number;
+export interface ForthDealsSummary {
+  total_deals: number;
+  total_debt: number;
+  total_current_payments: number;
+  total_revenue: number;
+}
+
+export interface ForthDealsByDealType {
+  deal_type: string;
+  total_deals: number;
+  total_revenue: number;
+}
+
+export interface ForthDealsBySourceLead {
+  source_lead: string;
+  total_deals: number;
+  total_revenue: number;
+}
+
+export interface ForthDealsByMonth {
+  period: string;
+  total_deals: number;
+  total_revenue: number;
+  by_deal_type: ForthDealsByDealType[];
+  by_source_lead: ForthDealsBySourceLead[];
+}
+
+export interface ForthRevenueByMonth {
+  period: string;
+  gross_revenue: number;
+}
+
+export interface ForthRevenueByLeadSource {
+  lead_source: string;
+  gross_revenue: number;
+}
+
+export interface ForthRevenueByDealType {
+  deal_type: string;
+  gross_revenue: number;
 }
 
 export interface RawForthDeals {
   id: number;
   datatable: "forth_deals";
-  total_deals: number;
-  total_current_debt_amount: number;
-  total_debt_revenue: number;
-  total_current_payment: number;
-  total_payment_revenue: number;
-  lead_source_breakdown: Record<string, number>;
-  month_breakdown: Record<string, ForthDealsMonthEntry>;
+  summary: ForthDealsSummary;
+  deals_by_month: ForthDealsByMonth[];
+  revenue_by_month: ForthRevenueByMonth[];
+  revenue_by_lead_source: ForthRevenueByLeadSource[];
+  revenue_by_deal_type: ForthRevenueByDealType[];
   createdAt: string;
 }
 

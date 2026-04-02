@@ -32,9 +32,10 @@ const EMPTY_SMS_INBOUND: DashboardData["smsInbound"] = {
   status_counts: {}, status_reason_counts: {}, month_breakdown: {}, createdAt: "",
 };
 const EMPTY_FORTH_DEALS: DashboardData["forthDeals"] = {
-  id: 0, datatable: "forth_deals", total_deals: 0, total_current_debt_amount: 0,
-  total_debt_revenue: 0, total_current_payment: 0, total_payment_revenue: 0,
-  lead_source_breakdown: {}, month_breakdown: {}, createdAt: "",
+  id: 0, datatable: "forth_deals",
+  summary: { total_deals: 0, total_debt: 0, total_current_payments: 0, total_revenue: 0 },
+  deals_by_month: [], revenue_by_month: [], revenue_by_lead_source: [],
+  revenue_by_deal_type: [], createdAt: "",
 };
 
 interface UseDashboardReturn {
