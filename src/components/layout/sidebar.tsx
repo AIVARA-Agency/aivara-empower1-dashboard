@@ -1,16 +1,17 @@
 "use client";
 
 import Image from "next/image";
-import { LayoutDashboard, MessageSquare, PhoneCall, TrendingUp, X, Menu } from "lucide-react";
+import { LayoutDashboard, MessageSquare, PhoneCall, TrendingUp, X, Menu, ListOrdered } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useActiveSection, type SectionId } from "@/hooks/use-active-section";
 
 const navItems = [
-  { label: "Overview",     href: "#overview",     id: "overview" as SectionId,     icon: LayoutDashboard },
-  { label: "Forth Deals",  href: "#forth-deals",   id: "forth-deals" as SectionId,  icon: TrendingUp },
-  { label: "SMS",          href: "#sms",           id: "sms" as SectionId,          icon: MessageSquare },
-  { label: "RVM",          href: "#rvm",           id: "rvm" as SectionId,          icon: PhoneCall },
+  { label: "Overview",      href: "#overview",      id: "overview" as SectionId,      icon: LayoutDashboard },
+  { label: "Forth Deals",   href: "#forth-deals",   id: "forth-deals" as SectionId,   icon: TrendingUp },
+  { label: "SMS",           href: "#sms",           id: "sms" as SectionId,           icon: MessageSquare },
+  { label: "RVM",           href: "#rvm",           id: "rvm" as SectionId,           icon: PhoneCall },
+  { label: "System Queue",  href: "#system-queue",  id: "system-queue" as SectionId,  icon: ListOrdered },
 ];
 
 interface SidebarProps {

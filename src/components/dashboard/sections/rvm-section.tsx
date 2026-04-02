@@ -5,7 +5,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import {
-  PhoneCall, CheckCircle2, XCircle, Clock3, DollarSign, AlertTriangle, Info,
+  PhoneCall, CheckCircle2, XCircle, Clock3, DollarSign,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -47,7 +47,7 @@ export function RVMSection({ data, isLoading }: Props) {
     );
   }
 
-  const { rvmRawlogs, rvmQueue } = data;
+  const { rvmRawlogs } = data;
 
   // Performance charts
   const outcomePie = [
@@ -65,12 +65,6 @@ export function RVMSection({ data, isLoading }: Props) {
   const monthTrend = Object.entries(rvmRawlogs.month_breakdown)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, e]) => ({ month, Success: e.success, Failure: e.failure, Queued: e.queued }));
-
-  // Queue charts
-  const queueCampaignData = Object.entries(rvmQueue.campaign_breakdown ?? {}).map(([name, value]) => ({ name, value }));
-  const queueMonths = Object.entries(rvmQueue.month_breakdown ?? {})
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([month, value]) => ({ month, Queued: value }));
 
   const successRate = rvmRawlogs.total_rvm > 0
     ? ((rvmRawlogs.success / rvmRawlogs.total_rvm) * 100).toFixed(1)
@@ -90,7 +84,7 @@ export function RVMSection({ data, isLoading }: Props) {
           <StatsCard title="Failure" value={fmt(rvmRawlogs.failure)}
             subtitle="Failed deliveries" icon={XCircle} iconClassName="bg-red-100 text-red-600" />
           <StatsCard title="Queued" value={fmt(rvmRawlogs.queue)}
-            subtitle="In Drop Cowboy system" icon={Clock3} iconClassName="bg-amber-100 text-amber-600" />
+            subtitle="Awaiting Drop Cowboy callback" icon={Clock3} iconClassName="bg-amber-100 text-amber-600" />
           <StatsCard title="Total Cost" value={fmtCurrency(rvmRawlogs.total_cost)}
             subtitle="RVM spend" icon={DollarSign} iconClassName="bg-teal-100 text-teal-600" />
         </div>
@@ -212,69 +206,6 @@ export function RVMSection({ data, isLoading }: Props) {
         )}
       </SubSection>
 
-      {/* ── Drop Cowboy Queue ──────────────────────────────────────── */}
-      <SubSection icon={Clock3} title="Drop Cowboy Queue" description="External queue — not managed by our system">
-        {/* Info callout */}
-        <div
-          className="flex items-start gap-3 p-4 rounded-lg border text-sm"
-          style={{
-            backgroundColor: "color-mix(in srgb, var(--primary) 6%, transparent)",
-            borderColor: "color-mix(in srgb, var(--primary) 20%, transparent)",
-          }}
-        >
-          <Info className="h-4 w-4 shrink-0 mt-0.5" style={{ color: "var(--primary)" }} />
-          <p className="text-[var(--muted-foreground)]">
-            These RVM messages are <span className="font-medium text-[var(--foreground)]">queued inside Drop Cowboy&apos;s system</span>, not our internal queue.
-            We are waiting for a callback from Drop Cowboy to confirm delivery status.
-            The counts below reflect records submitted but not yet confirmed.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4">
-          <StatsCard title="Total Queued in Drop Cowboy" value={fmt(rvmQueue.total_queued)}
-            subtitle="Awaiting Drop Cowboy callback" icon={AlertTriangle} iconClassName="bg-amber-100 text-amber-600" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold">Campaign Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={queueCampaignData} layout="vertical" margin={{ left: 8, right: 16 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} width={60} />
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Bar dataKey="value" name="Queued" radius={[0, 3, 3, 0]}>
-                    {queueCampaignData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {queueMonths.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-sm font-semibold">Monthly Queue Volume</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={200}>
-                  <BarChart data={queueMonths} margin={{ top: 4, right: 16, left: 0, bottom: 0 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis dataKey="month" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                    <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
-                    <Tooltip contentStyle={TOOLTIP_STYLE} />
-                    <Bar dataKey="Queued" fill="#e0a875" radius={[3, 3, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-      </SubSection>
     </section>
   );
 }

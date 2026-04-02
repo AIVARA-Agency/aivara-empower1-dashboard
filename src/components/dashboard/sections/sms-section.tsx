@@ -6,7 +6,7 @@ import {
 } from "recharts";
 import {
   MessageSquare, MessageCircle, Inbox, TrendingDown, DollarSign,
-  CheckCircle2, XCircle, Clock3, Wifi,
+  CheckCircle2, XCircle,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -48,7 +48,7 @@ export function SMSSection({ data, isLoading }: Props) {
     );
   }
 
-  const { smsRawlogs, smsQueue, smsInbound } = data;
+  const { smsRawlogs, smsInbound } = data;
 
   // Outbound charts
   const statusData = Object.entries(smsRawlogs.status_breakdown).map(([name, value]) => ({ name, value }));
@@ -59,14 +59,6 @@ export function SMSSection({ data, isLoading }: Props) {
   const smsMonths = Object.entries(smsRawlogs.month_breakdown)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([month, e]) => ({ month, Messages: e.total_messages, Cost: e.total_cost }));
-
-  // Queue charts
-  const queueCarrierData = Object.entries(smsQueue.carrier_breakdown ?? {})
-    .sort(([, a], [, b]) => b - a)
-    .slice(0, 12)
-    .map(([name, value]) => ({ name: name.replace(/ OTHER$/, ""), value }));
-  const queueCampaignData = Object.entries(smsQueue.campaign_breakdown ?? {}).map(([name, value]) => ({ name, value }));
-  const actionData = Object.entries(smsQueue.action_breakdown ?? {}).map(([name, value]) => ({ name, value }));
 
   // Inbound charts
   const sentimentData = Object.entries(smsInbound.status_reason_counts)
@@ -188,81 +180,6 @@ export function SMSSection({ data, isLoading }: Props) {
         </div>
       </SubSection>
 
-      {/* ── Queue ──────────────────────────────────────────────────── */}
-      <SubSection
-        icon={Clock3}
-        title="Queue"
-        description="Outbound SMS pending dispatch"
-      >
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <StatsCard title="Total Queued" value={fmt(smsQueue.total_queued)}
-            subtitle="Awaiting send" icon={Clock3} iconClassName="bg-amber-100 text-amber-600" />
-          <StatsCard title="Sent" value={fmt(smsQueue.action_breakdown?.sent ?? 0)}
-            subtitle="Already dispatched" icon={CheckCircle2} iconClassName="bg-green-100 text-green-600" />
-          <StatsCard title="In Queue" value={fmt(smsQueue.action_breakdown?.queue ?? 0)}
-            subtitle="Still pending" icon={MessageCircle} iconClassName="bg-blue-100 text-blue-600" />
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold">Action Breakdown</CardTitle>
-              <CardDescription className="text-xs">Sent vs still in queue</CardDescription>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center">
-              <ResponsiveContainer width="100%" height={200}>
-                <PieChart>
-                  <Pie data={actionData} cx="50%" cy="50%" outerRadius={75} dataKey="value"
-                    label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`} labelLine={false}>
-                    {actionData.map((entry, i) => <Cell key={i} fill={color(entry.name, i)} />)}
-                  </Pie>
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                </PieChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold">Campaign Breakdown</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={queueCampaignData} layout="vertical" margin={{ left: 8, right: 16 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                  <XAxis type="number" tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
-                  <YAxis type="category" dataKey="name" tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} width={60} />
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Bar dataKey="value" name="Queued" radius={[0, 3, 3, 0]}>
-                    {queueCampaignData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="text-sm font-semibold">Carrier Breakdown</CardTitle>
-              <CardDescription className="text-xs">Top 12 carriers in queue</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={queueCarrierData} margin={{ top: 4, right: 16, left: 0, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fontSize: 9, fill: "var(--muted-foreground)" }} angle={-35} textAnchor="end" interval={0} />
-                  <YAxis tick={{ fontSize: 10, fill: "var(--muted-foreground)" }} />
-                  <Tooltip contentStyle={TOOLTIP_STYLE} />
-                  <Bar dataKey="value" name="Queued" radius={[3, 3, 0, 0]}>
-                    {queueCarrierData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-      </SubSection>
-
       {/* ── Inbound ───────────────────────────────────────────────── */}
       <SubSection
         icon={Inbox}
@@ -361,5 +278,3 @@ function SubSection({
   );
 }
 
-// Suppress unused import warning
-void Wifi;
