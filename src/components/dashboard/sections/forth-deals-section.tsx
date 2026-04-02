@@ -209,42 +209,62 @@ export function ForthDealsSection({ data, isLoading }: Props) {
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {dealsByMonth.map((d) => (
             <Card key={d.period}>
-              <CardHeader className="pb-2">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-bold text-[var(--primary)]">{d.period}</CardTitle>
-                  <span className="text-xs font-semibold text-[var(--muted-foreground)]">
-                    {d.total_deals} deal{d.total_deals !== 1 ? "s" : ""} · {fmtCurrencyShort(d.total_revenue)}
-                  </span>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-sm font-bold text-[var(--primary)]">{d.period}</CardTitle>
+                {/* Summary totals */}
+                <div className="flex gap-4 mt-1">
+                  <div>
+                    <p className="text-[10px] text-[var(--muted-foreground)]">Total Deals</p>
+                    <p className="text-base font-bold text-[var(--foreground)]">{d.total_deals}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-[var(--muted-foreground)]">Total Revenue</p>
+                    <p className="text-base font-bold text-[var(--foreground)]">{fmtCurrency(d.total_revenue)}</p>
+                  </div>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-3 text-xs">
+              <CardContent className="space-y-4 text-xs pt-0">
                 {/* By deal type */}
-                {d.by_deal_type.length > 0 && (
+                {d.by_deal_type.filter((t) => t.total_deals > 0).length > 0 && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-[var(--muted-foreground)] mb-1.5">By Deal Type</p>
-                    <div className="space-y-1">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-[var(--muted-foreground)] mb-2">By Deal Type</p>
+                    {/* Column headers */}
+                    <div className="grid grid-cols-3 text-[10px] font-semibold text-[var(--muted-foreground)] mb-1 px-0.5">
+                      <span className="col-span-1">Type</span>
+                      <span className="text-center">Deals</span>
+                      <span className="text-right">Revenue</span>
+                    </div>
+                    <div className="space-y-1.5">
                       {d.by_deal_type.filter((t) => t.total_deals > 0).map((t) => (
-                        <div key={t.deal_type} className="flex justify-between items-center">
-                          <span className="text-[var(--muted-foreground)] truncate max-w-[55%]">{t.deal_type}</span>
-                          <span className="font-medium tabular-nums">
-                            {t.total_deals} · {fmtCurrencyShort(t.total_revenue)}
-                          </span>
+                        <div key={t.deal_type} className="grid grid-cols-3 items-center gap-1">
+                          <span className="text-[var(--foreground)] truncate col-span-1">{t.deal_type}</span>
+                          <span className="text-center font-medium tabular-nums text-[var(--muted-foreground)]">{t.total_deals}</span>
+                          <span className="text-right font-semibold tabular-nums">{fmtCurrencyShort(t.total_revenue)}</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
+                {/* Divider */}
+                {d.by_source_lead.length > 0 && d.by_deal_type.filter((t) => t.total_deals > 0).length > 0 && (
+                  <hr style={{ borderColor: "var(--border)" }} />
+                )}
                 {/* By lead source */}
                 {d.by_source_lead.length > 0 && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider font-semibold text-[var(--muted-foreground)] mb-1.5">By Lead Source</p>
-                    <div className="space-y-1">
+                    <p className="text-[10px] uppercase tracking-wider font-semibold text-[var(--muted-foreground)] mb-2">By Lead Source</p>
+                    {/* Column headers */}
+                    <div className="grid grid-cols-3 text-[10px] font-semibold text-[var(--muted-foreground)] mb-1 px-0.5">
+                      <span className="col-span-1">Source</span>
+                      <span className="text-center">Deals</span>
+                      <span className="text-right">Revenue</span>
+                    </div>
+                    <div className="space-y-1.5">
                       {d.by_source_lead.map((s) => (
-                        <div key={s.source_lead} className="flex justify-between items-center">
-                          <span className="text-[var(--muted-foreground)] truncate max-w-[55%]">{s.source_lead}</span>
-                          <span className="font-medium tabular-nums">
-                            {s.total_deals} · {fmtCurrencyShort(s.total_revenue)}
-                          </span>
+                        <div key={s.source_lead} className="grid grid-cols-3 items-center gap-1">
+                          <span className="text-[var(--foreground)] truncate col-span-1">{s.source_lead}</span>
+                          <span className="text-center font-medium tabular-nums text-[var(--muted-foreground)]">{s.total_deals}</span>
+                          <span className="text-right font-semibold tabular-nums">{fmtCurrencyShort(s.total_revenue)}</span>
                         </div>
                       ))}
                     </div>
