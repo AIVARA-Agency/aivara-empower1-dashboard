@@ -1,10 +1,41 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { DashboardData } from "@/types";
+import type { DashboardData, RawDatatableItem } from "@/types";
 
 const DASHBOARD_API = "/api/dashboard";
 const REFRESH_INTERVAL = 600_000; // 10 minutes
+
+// Empty fallbacks so components never receive undefined
+const EMPTY_RVM_QUEUE: DashboardData["rvmQueue"] = {
+  id: 0, datatable: "rvm_queue", total_queued: 0,
+  campaign_breakdown: {}, month_breakdown: {}, createdAt: "",
+};
+const EMPTY_SMS_QUEUE: DashboardData["smsQueue"] = {
+  id: 0, datatable: "sms_queue", total_queued: 0,
+  campaign_breakdown: {}, carrier_breakdown: {}, action_breakdown: {},
+  month_breakdown: {}, createdAt: "",
+};
+const EMPTY_RVM_RAWLOGS: DashboardData["rvmRawlogs"] = {
+  id: 0, datatable: "rvm_rawlogs", success: 0, failure: 0, queue: 0,
+  total_rvm: 0, total_cost: 0, average_ingest_time_ms: 0,
+  campaign_breakdown: {}, lead_source_breakdown: {}, reasons: {},
+  month_breakdown: {}, createdAt: "",
+};
+const EMPTY_SMS_RAWLOGS: DashboardData["smsRawlogs"] = {
+  id: 0, datatable: "sms_rawlogs", total_messages: 0, total_cost: 0,
+  average_ingest_time_ms: 0, status_breakdown: {}, campaign_breakdown: {},
+  lead_source_breakdown: {}, month_breakdown: {}, createdAt: "",
+};
+const EMPTY_SMS_INBOUND: DashboardData["smsInbound"] = {
+  id: 0, datatable: "sms_inbound_rawlogs", total_received: 0,
+  status_counts: {}, status_reason_counts: {}, month_breakdown: {}, createdAt: "",
+};
+const EMPTY_FORTH_DEALS: DashboardData["forthDeals"] = {
+  id: 0, datatable: "forth_deals", total_deals: 0, total_current_debt_amount: 0,
+  total_debt_revenue: 0, total_current_payment: 0, total_payment_revenue: 0,
+  lead_source_breakdown: {}, month_breakdown: {}, createdAt: "",
+};
 
 interface UseDashboardReturn {
   data: DashboardData | null;
@@ -23,68 +54,25 @@ export function useDashboard(): UseDashboardReturn {
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
   const fetchData = useCallback(async (isManualRefresh = false) => {
-    if (isManualRefresh) {
-      setIsRefreshing(true);
-    }
+    if (isManualRefresh) setIsRefreshing(true);
     setError(null);
 
     try {
-      const res = await fetch(DASHBOARD_API, {
-        cache: "no-store",
-        headers: { "Content-Type": "application/json" },
-      });
+      const res = await fetch(DASHBOARD_API, { cache: "no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
-      if (!res.ok) {
-        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-      }
+      const raw: RawDatatableItem[] = await res.json();
 
-      // API returns array: [{ rvm_data }, { sms_data }, { sms_inbound_data }, { sms_queue_data }, { rvm_queue_data }]
-      const raw = await res.json();
-      const rvmRaw      = raw[0]?.rvm_data        ?? {};
-      const smsRaw      = raw[1]?.sms_data         ?? {};
-      const inboundRaw  = raw[2]?.sms_inbound_data ?? {};
-      const smsQueueRaw = raw[3]?.sms_queue_data   ?? {};
-      const rvmQueueRaw = raw[4]?.rvm_queue_data   ?? {};
+      const find = <T extends RawDatatableItem>(key: T["datatable"]): T =>
+        (raw.find((item) => item.datatable === key) as T);
 
       const normalized: DashboardData = {
-        rvm: {
-          completed:          rvmRaw.success       ?? 0,
-          failed:             rvmRaw.failure        ?? 0,
-          queued:             rvmRaw.queue          ?? 0,
-          total:              rvmRaw.total_rvm      ?? 0,
-          total_cost:         rvmRaw.total_cost     ?? 0,
-          campaign_breakdown: rvmRaw.campaign_breakdown ?? {},
-          failure_reasons:    rvmRaw.reasons        ?? {},
-        },
-        sms_outbound: {
-          total:              smsRaw.total_messages               ?? 0,
-          delivered:          smsRaw.status_breakdown?.delivered  ?? 0,
-          carrier_rejected:   smsRaw.status_breakdown?.carrier_rejected ?? 0,
-          message_sent:       smsRaw.status_breakdown?.message_sent     ?? 0,
-          failed:             smsRaw.status_breakdown?.failed           ?? 0,
-          total_cost:         smsRaw.total_cost                  ?? 0,
-          campaign_breakdown: smsRaw.campaign_breakdown          ?? {},
-        },
-        sms_inbound: {
-          total: inboundRaw.total_received ?? 0,
-          sentiment: {
-            dnc:      inboundRaw.status_reason_counts?.DNC            ?? 0,
-            positive: inboundRaw.status_reason_counts?.POSITIVE       ?? 0,
-            neutral:  inboundRaw.status_reason_counts?.NEUTRAL        ?? 0,
-            negative: inboundRaw.status_reason_counts?.NEGATIVE       ?? 0,
-            invalid:  inboundRaw.status_reason_counts?.INVALID_NUMBER ?? 0,
-          },
-        },
-        sms_queue: {
-          total_queued:       smsQueueRaw.total_queued       ?? 0,
-          campaign_breakdown: smsQueueRaw.campaign_breakdown ?? {},
-          carrier_breakdown:  smsQueueRaw.carrier_breakdown  ?? {},
-          action_breakdown:   smsQueueRaw.action_breakdown   ?? {},
-        },
-        rvm_queue: {
-          total_queued:       rvmQueueRaw.total_queued       ?? 0,
-          campaign_breakdown: rvmQueueRaw.campaign_breakdown ?? {},
-        },
+        rvmQueue:   find("rvm_queue")   ?? EMPTY_RVM_QUEUE,
+        smsQueue:   find("sms_queue")   ?? EMPTY_SMS_QUEUE,
+        rvmRawlogs: find("rvm_rawlogs") ?? EMPTY_RVM_RAWLOGS,
+        smsRawlogs: find("sms_rawlogs") ?? EMPTY_SMS_RAWLOGS,
+        smsInbound: find("sms_inbound_rawlogs") ?? EMPTY_SMS_INBOUND,
+        forthDeals: find("forth_deals") ?? EMPTY_FORTH_DEALS,
       };
 
       setData(normalized);
@@ -97,20 +85,16 @@ export function useDashboard(): UseDashboardReturn {
     }
   }, []);
 
-  // Initial load
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  // Auto-refresh every 60 seconds
   useEffect(() => {
     const timer = setInterval(() => fetchData(false), REFRESH_INTERVAL);
     return () => clearInterval(timer);
   }, [fetchData]);
 
-  const refresh = useCallback(() => {
-    fetchData(true);
-  }, [fetchData]);
+  const refresh = useCallback(() => fetchData(true), [fetchData]);
 
   return { data, error, isLoading, isRefreshing, lastUpdated, refresh };
 }

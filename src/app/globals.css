@@ -129,6 +129,11 @@
   --shadow-2xl: var(--shadow-2xl);
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 4rem; /* matches h-16 sticky header */
+}
+
 * {
   border-color: var(--border);
 }
