@@ -1,79 +1,81 @@
-// ─── Per-datatable raw shapes ────────────────────────────────────────────────
-
-export interface RawRvmQueue {
-  id: number;
-  datatable: "rvm_queue";
-  total_queued: number;
-  campaign_breakdown: Record<string, number>;
-  month_breakdown: Record<string, number>;
-  createdAt: string;
-}
+// ─── sms_queue ────────────────────────────────────────────────────────────────
 
 export interface RawSmsQueue {
   id: number;
   datatable: "sms_queue";
   total_queued: number;
-  campaign_breakdown: Record<string, number>;
-  carrier_breakdown: Record<string, number>;
-  action_breakdown: Record<string, number>;
-  month_breakdown: Record<string, number>;
   createdAt: string;
 }
 
-export interface RvmMonthEntry {
-  success: number;
-  failure: number;
-  queued: number;
-  total_cost: number;
-}
+// ─── sms_rawlogs ──────────────────────────────────────────────────────────────
 
-export interface RawRvmRawlogs {
-  id: number;
-  datatable: "rvm_rawlogs";
-  success: number;
-  failure: number;
-  queue: number;
-  total_rvm: number;
-  total_cost: number;
-  average_ingest_time_ms: number;
-  campaign_breakdown: Record<string, number>;
-  lead_source_breakdown: Record<string, number>;
-  reasons: Record<string, number>;
-  month_breakdown: Record<string, RvmMonthEntry>;
-  createdAt: string;
+export interface SmsCarrierStats {
+  total_sent: number;
+  delivered: number;
+  carrier_rejected: number;
+  failed: number;
+  message_sent: number;
+  cost: number;
+  delivery_rate: number;
 }
 
 export interface SmsMonthEntry {
-  total_messages: number;
-  total_cost: number;
+  total_sent: number;
+  delivered: number;
+  carrier_rejected: number;
+  failed: number;
+  message_sent: number;
+  cost: number;
+  delivery_rate: number;
+  carrier_breakdown: Record<string, SmsCarrierStats>;
 }
 
 export interface RawSmsRawlogs {
   id: number;
   datatable: "sms_rawlogs";
-  total_messages: number;
+  total_sent: number;
+  total_delivered: number;
+  total_carrier_rejected: number;
+  total_failed: number;
+  total_message_sent: number;
   total_cost: number;
-  average_ingest_time_ms: number;
-  status_breakdown: Record<string, number>;
-  campaign_breakdown: Record<string, number>;
-  lead_source_breakdown: Record<string, number>;
+  overall_delivery_rate: number;
+  carrier_breakdown: Record<string, SmsCarrierStats>;
   month_breakdown: Record<string, SmsMonthEntry>;
   createdAt: string;
 }
 
-export interface InboundMonthEntry {
+// ─── sms_inbound_rawlogs ──────────────────────────────────────────────────────
+
+export interface StatusReasonCount {
+  status_reason: string;
   total_received: number;
+}
+
+export interface InboundMonthEntry {
+  period: string;
+  total_received: number;
+  by_status_reason: StatusReasonCount[];
+}
+
+export interface InboundWeekEntry {
+  period: string;
+  date_range: string;
+  total_received: number;
+  by_status_reason: StatusReasonCount[];
 }
 
 export interface RawSmsInbound {
   id: number;
   datatable: "sms_inbound_rawlogs";
   total_received: number;
-  status_counts: Record<string, number>;
-  status_reason_counts: Record<string, number>;
-  month_breakdown: Record<string, InboundMonthEntry>;
+  status_reason_counts: StatusReasonCount[];
+  month_breakdown: InboundMonthEntry[];
+  week_breakdown: InboundWeekEntry[];
   createdAt: string;
 }
+
+// ─── forth_deals ──────────────────────────────────────────────────────────────
 
 export interface ForthDealsSummary {
   total_deals: number;
@@ -82,66 +84,70 @@ export interface ForthDealsSummary {
   total_revenue: number;
 }
 
-export interface ForthDealsByDealType {
+// Shared sub-entry shapes used inside breakdowns
+export interface ForthDealTypeEntry {
   deal_type: string;
   total_deals: number;
   total_revenue: number;
 }
-
-export interface ForthDealsBySourceLead {
+export interface ForthSourceLeadEntry {
   source_lead: string;
   total_deals: number;
   total_revenue: number;
 }
 
-export interface ForthDealsByMonth {
+export interface ForthMonthEntry {
   period: string;
   total_deals: number;
   total_revenue: number;
-  by_deal_type: ForthDealsByDealType[];
-  by_source_lead: ForthDealsBySourceLead[];
+  by_deal_type: ForthDealTypeEntry[];
+  by_source_lead: ForthSourceLeadEntry[];
 }
 
-export interface ForthRevenueByMonth {
+export interface ForthWeekEntry {
   period: string;
-  gross_revenue: number;
+  date_range: string;
+  total_deals: number;
+  total_revenue: number;
+  by_deal_type: ForthDealTypeEntry[];
+  by_source_lead: ForthSourceLeadEntry[];
 }
 
-export interface ForthRevenueByLeadSource {
-  lead_source: string;
-  gross_revenue: number;
+export interface ForthSourceLead {
+  source_lead: string;
+  total_deals: number;
+  total_revenue: number;
+  by_deal_type: ForthDealTypeEntry[];
 }
 
-export interface ForthRevenueByDealType {
+export interface ForthDealType {
   deal_type: string;
-  gross_revenue: number;
+  total_deals: number;
+  total_revenue: number;
+  by_source_lead: ForthSourceLeadEntry[];
 }
 
 export interface RawForthDeals {
   id: number;
   datatable: "forth_deals";
   summary: ForthDealsSummary;
-  deals_by_month: ForthDealsByMonth[];
-  revenue_by_month: ForthRevenueByMonth[];
-  revenue_by_lead_source: ForthRevenueByLeadSource[];
-  revenue_by_deal_type: ForthRevenueByDealType[];
+  month_breakdown: ForthMonthEntry[];
+  week_breakdown: ForthWeekEntry[];
+  source_lead_breakdown: ForthSourceLead[];
+  deal_type_breakdown: ForthDealType[];
   createdAt: string;
 }
 
+// ─── Union + DashboardData ────────────────────────────────────────────────────
+
 export type RawDatatableItem =
-  | RawRvmQueue
   | RawSmsQueue
-  | RawRvmRawlogs
   | RawSmsRawlogs
   | RawSmsInbound
   | RawForthDeals;
 
-// ─── Normalized dashboard data ───────────────────────────────────────────────
-
 export interface DashboardData {
-  rvmQueue: RawRvmQueue;
   smsQueue: RawSmsQueue;
-  rvmRawlogs: RawRvmRawlogs;
   smsRawlogs: RawSmsRawlogs;
   smsInbound: RawSmsInbound;
   forthDeals: RawForthDeals;
@@ -153,9 +159,4 @@ export interface ChartDataPoint {
   name: string;
   value: number;
   fill?: string;
-}
-
-export interface BarChartDataPoint {
-  name: string;
-  [key: string]: string | number;
 }

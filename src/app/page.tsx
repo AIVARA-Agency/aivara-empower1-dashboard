@@ -3,11 +3,10 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { CronBanner } from "@/components/dashboard/cron-banner";
-import { OverviewSection } from "@/components/dashboard/sections/overview-section";
-import { SMSSection } from "@/components/dashboard/sections/sms-section";
-import { RVMSection } from "@/components/dashboard/sections/rvm-section";
-import { ForthDealsSection } from "@/components/dashboard/sections/forth-deals-section";
 import { SystemQueueSection } from "@/components/dashboard/sections/system-queue-section";
+import { ForthDealsSection } from "@/components/dashboard/sections/forth-deals-section";
+import { SmsInboundSection } from "@/components/dashboard/sections/sms-inbound-section";
+import { SmsPerformanceSection } from "@/components/dashboard/sections/sms-performance-section";
 import { useDashboard } from "@/hooks/use-dashboard";
 
 export default function DashboardPage() {
@@ -43,19 +42,17 @@ export default function DashboardPage() {
           <div className="p-4 lg:p-6 space-y-20">
             {data ? (
               <>
-                <OverviewSection data={data} isLoading={false} />
-                <ForthDealsSection data={data} isLoading={false} />
-                <SMSSection data={data} isLoading={false} />
-                <RVMSection data={data} isLoading={false} />
                 <SystemQueueSection data={data} isLoading={false} />
+                <ForthDealsSection data={data} isLoading={false} />
+                <SmsInboundSection data={data} isLoading={false} />
+                <SmsPerformanceSection data={data} isLoading={false} />
               </>
             ) : (
               <>
-                <OverviewSection data={null as never} isLoading={true} />
-                <ForthDealsSection data={null as never} isLoading={true} />
-                <SMSSection data={null as never} isLoading={true} />
-                <RVMSection data={null as never} isLoading={true} />
                 <SystemQueueSection data={null as never} isLoading={true} />
+                <ForthDealsSection data={null as never} isLoading={true} />
+                <SmsInboundSection data={null as never} isLoading={true} />
+                <SmsPerformanceSection data={null as never} isLoading={true} />
               </>
             )}
           </div>

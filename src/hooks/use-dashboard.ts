@@ -6,36 +6,25 @@ import type { DashboardData, RawDatatableItem } from "@/types";
 const DASHBOARD_API = "/api/dashboard";
 const REFRESH_INTERVAL = 600_000; // 10 minutes
 
-// Empty fallbacks so components never receive undefined
-const EMPTY_RVM_QUEUE: DashboardData["rvmQueue"] = {
-  id: 0, datatable: "rvm_queue", total_queued: 0,
-  campaign_breakdown: {}, month_breakdown: {}, createdAt: "",
-};
 const EMPTY_SMS_QUEUE: DashboardData["smsQueue"] = {
-  id: 0, datatable: "sms_queue", total_queued: 0,
-  campaign_breakdown: {}, carrier_breakdown: {}, action_breakdown: {},
-  month_breakdown: {}, createdAt: "",
-};
-const EMPTY_RVM_RAWLOGS: DashboardData["rvmRawlogs"] = {
-  id: 0, datatable: "rvm_rawlogs", success: 0, failure: 0, queue: 0,
-  total_rvm: 0, total_cost: 0, average_ingest_time_ms: 0,
-  campaign_breakdown: {}, lead_source_breakdown: {}, reasons: {},
-  month_breakdown: {}, createdAt: "",
+  id: 0, datatable: "sms_queue", total_queued: 0, createdAt: "",
 };
 const EMPTY_SMS_RAWLOGS: DashboardData["smsRawlogs"] = {
-  id: 0, datatable: "sms_rawlogs", total_messages: 0, total_cost: 0,
-  average_ingest_time_ms: 0, status_breakdown: {}, campaign_breakdown: {},
-  lead_source_breakdown: {}, month_breakdown: {}, createdAt: "",
+  id: 0, datatable: "sms_rawlogs",
+  total_sent: 0, total_delivered: 0, total_carrier_rejected: 0,
+  total_failed: 0, total_message_sent: 0, total_cost: 0, overall_delivery_rate: 0,
+  carrier_breakdown: {}, month_breakdown: {}, createdAt: "",
 };
 const EMPTY_SMS_INBOUND: DashboardData["smsInbound"] = {
-  id: 0, datatable: "sms_inbound_rawlogs", total_received: 0,
-  status_counts: {}, status_reason_counts: {}, month_breakdown: {}, createdAt: "",
+  id: 0, datatable: "sms_inbound_rawlogs",
+  total_received: 0, status_reason_counts: [],
+  month_breakdown: [], week_breakdown: [], createdAt: "",
 };
 const EMPTY_FORTH_DEALS: DashboardData["forthDeals"] = {
   id: 0, datatable: "forth_deals",
   summary: { total_deals: 0, total_debt: 0, total_current_payments: 0, total_revenue: 0 },
-  deals_by_month: [], revenue_by_month: [], revenue_by_lead_source: [],
-  revenue_by_deal_type: [], createdAt: "",
+  month_breakdown: [], week_breakdown: [],
+  source_lead_breakdown: [], deal_type_breakdown: [], createdAt: "",
 };
 
 interface UseDashboardReturn {
@@ -68,12 +57,10 @@ export function useDashboard(): UseDashboardReturn {
         (raw.find((item) => item.datatable === key) as T);
 
       const normalized: DashboardData = {
-        rvmQueue:   find("rvm_queue")   ?? EMPTY_RVM_QUEUE,
-        smsQueue:   find("sms_queue")   ?? EMPTY_SMS_QUEUE,
-        rvmRawlogs: find("rvm_rawlogs") ?? EMPTY_RVM_RAWLOGS,
-        smsRawlogs: find("sms_rawlogs") ?? EMPTY_SMS_RAWLOGS,
+        smsQueue:   find("sms_queue")           ?? EMPTY_SMS_QUEUE,
+        smsRawlogs: find("sms_rawlogs")         ?? EMPTY_SMS_RAWLOGS,
         smsInbound: find("sms_inbound_rawlogs") ?? EMPTY_SMS_INBOUND,
-        forthDeals: find("forth_deals") ?? EMPTY_FORTH_DEALS,
+        forthDeals: find("forth_deals")         ?? EMPTY_FORTH_DEALS,
       };
 
       setData(normalized);
@@ -86,9 +73,7 @@ export function useDashboard(): UseDashboardReturn {
     }
   }, []);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
     const timer = setInterval(() => fetchData(false), REFRESH_INTERVAL);

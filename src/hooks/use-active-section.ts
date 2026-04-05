@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-export const SECTION_IDS = ["overview", "forth-deals", "sms", "rvm", "system-queue"] as const;
+export const SECTION_IDS = ["system-queue", "forth-deals", "sms-inbound", "sms-performance"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
 export function useActiveSection(): SectionId {
-  const [active, setActive] = useState<SectionId>("overview");
+  const [active, setActive] = useState<SectionId>("system-queue");
 
   useEffect(() => {
     const ratioMap = new Map<SectionId, number>();
@@ -19,20 +19,14 @@ export function useActiveSection(): SectionId {
       const obs = new IntersectionObserver(
         ([entry]) => {
           ratioMap.set(id, entry.intersectionRatio);
-          let best: SectionId = "overview";
+          let best: SectionId = "system-queue";
           let bestRatio = -1;
           ratioMap.forEach((ratio, sectionId) => {
-            if (ratio > bestRatio) {
-              bestRatio = ratio;
-              best = sectionId;
-            }
+            if (ratio > bestRatio) { bestRatio = ratio; best = sectionId; }
           });
           setActive(best);
         },
-        {
-          threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0],
-          rootMargin: "-10% 0px -60% 0px",
-        }
+        { threshold: [0, 0.1, 0.25, 0.5, 0.75, 1.0], rootMargin: "-10% 0px -60% 0px" }
       );
 
       obs.observe(el);

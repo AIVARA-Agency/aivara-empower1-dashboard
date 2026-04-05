@@ -1,16 +1,16 @@
 export const CHART_COLORS = [
-  "#64b5d0",
-  "#4e8fa0",
-  "#7dcad8",
-  "#72c0d0",
-  "#93d4df",
-  "#e0a875",
-  "#d97d5a",
-  "#a78bca",
-  "#6ec6a0",
-  "#e8a0bf",
-  "#f0c97a",
-  "#8cb8e8",
+  "#4cc9f0", // sky blue
+  "#ff6b6b", // coral red
+  "#51cf66", // green
+  "#ffd43b", // yellow
+  "#cc5de8", // purple
+  "#ff922b", // orange
+  "#20c997", // teal
+  "#f06595", // pink
+  "#74c0fc", // light blue
+  "#a9e34b", // lime
+  "#e599f7", // lavender
+  "#fd7e14", // deep orange
 ];
 
 export const STATUS_COLORS: Record<string, string> = {
