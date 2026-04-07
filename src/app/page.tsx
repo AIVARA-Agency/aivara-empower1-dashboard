@@ -6,6 +6,7 @@ import { CronBanner } from "@/components/dashboard/cron-banner";
 import { SystemQueueSection } from "@/components/dashboard/sections/system-queue-section";
 import { ForthDealsSection } from "@/components/dashboard/sections/forth-deals-section";
 import { SmsInboundSection } from "@/components/dashboard/sections/sms-inbound-section";
+import { RingCentralSection } from "@/components/dashboard/sections/ring-central-section";
 import { SmsPerformanceSection } from "@/components/dashboard/sections/sms-performance-section";
 import { useDashboard } from "@/hooks/use-dashboard";
 
@@ -44,6 +45,7 @@ export default function DashboardPage() {
               <>
                 <SystemQueueSection data={data} isLoading={false} />
                 <ForthDealsSection data={data} isLoading={false} />
+                <RingCentralSection data={data} isLoading={false} />
                 <SmsInboundSection data={data} isLoading={false} />
                 <SmsPerformanceSection data={data} isLoading={false} />
               </>
@@ -51,6 +53,7 @@ export default function DashboardPage() {
               <>
                 <SystemQueueSection data={null as never} isLoading={true} />
                 <ForthDealsSection data={null as never} isLoading={true} />
+                <RingCentralSection data={null as never} isLoading={true} />
                 <SmsInboundSection data={null as never} isLoading={true} />
                 <SmsPerformanceSection data={null as never} isLoading={true} />
               </>

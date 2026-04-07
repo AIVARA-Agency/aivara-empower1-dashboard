@@ -4,6 +4,10 @@ export interface RawSmsQueue {
   id: number;
   datatable: "sms_queue";
   total_queued: number;
+  campaign_breakdown: Record<string, number>;
+  carrier_breakdown: Record<string, number>;
+  action_breakdown: Record<string, number>;
+  month_breakdown: Record<string, number>;
   createdAt: string;
 }
 
@@ -19,7 +23,7 @@ export interface SmsCarrierStats {
   delivery_rate: number;
 }
 
-export interface SmsMonthEntry {
+export interface SmsPeriodEntry {
   total_sent: number;
   delivered: number;
   carrier_rejected: number;
@@ -28,6 +32,10 @@ export interface SmsMonthEntry {
   cost: number;
   delivery_rate: number;
   carrier_breakdown: Record<string, SmsCarrierStats>;
+}
+
+export interface SmsWeekEntry extends SmsPeriodEntry {
+  date_range: string;
 }
 
 export interface RawSmsRawlogs {
@@ -41,7 +49,8 @@ export interface RawSmsRawlogs {
   total_cost: number;
   overall_delivery_rate: number;
   carrier_breakdown: Record<string, SmsCarrierStats>;
-  month_breakdown: Record<string, SmsMonthEntry>;
+  month_breakdown: Record<string, SmsPeriodEntry>;
+  week_breakdown: Record<string, SmsWeekEntry>;
   createdAt: string;
 }
 
@@ -138,19 +147,58 @@ export interface RawForthDeals {
   createdAt: string;
 }
 
+// ─── ring_central ─────────────────────────────────────────────────────────────
+
+export interface RingCentralSummary {
+  total_calls: number;
+  answered_calls: number;
+  missed_calls: number;
+  total_duration: number;
+  total_duration_mins: number;
+  answer_rate: number;
+  avg_duration: number;
+}
+
+export interface RingCentralLeadSource extends RingCentralSummary {
+  lead_source: string;
+}
+
+export interface RingCentralMonthEntry extends RingCentralSummary {
+  period: string;
+  by_leadsource: RingCentralLeadSource[];
+}
+
+export interface RingCentralWeekEntry extends RingCentralSummary {
+  period: string;
+  date_range: string;
+  by_leadsource: RingCentralLeadSource[];
+}
+
+export interface RawRingCentral {
+  id: number;
+  datatable: "ring_central";
+  summary: RingCentralSummary;
+  leadsource_breakdown: RingCentralLeadSource[];
+  month_breakdown: RingCentralMonthEntry[];
+  week_breakdown: RingCentralWeekEntry[];
+  createdAt: string;
+}
+
 // ─── Union + DashboardData ────────────────────────────────────────────────────
 
 export type RawDatatableItem =
   | RawSmsQueue
   | RawSmsRawlogs
   | RawSmsInbound
-  | RawForthDeals;
+  | RawForthDeals
+  | RawRingCentral;
 
 export interface DashboardData {
   smsQueue: RawSmsQueue;
   smsRawlogs: RawSmsRawlogs;
   smsInbound: RawSmsInbound;
   forthDeals: RawForthDeals;
+  ringCentral: RawRingCentral;
 }
 
 // ─── Chart utilities ─────────────────────────────────────────────────────────

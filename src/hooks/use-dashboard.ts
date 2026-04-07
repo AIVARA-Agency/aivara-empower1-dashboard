@@ -7,13 +7,15 @@ const DASHBOARD_API = "/api/dashboard";
 const REFRESH_INTERVAL = 600_000; // 10 minutes
 
 const EMPTY_SMS_QUEUE: DashboardData["smsQueue"] = {
-  id: 0, datatable: "sms_queue", total_queued: 0, createdAt: "",
+  id: 0, datatable: "sms_queue", total_queued: 0,
+  campaign_breakdown: {}, carrier_breakdown: {}, action_breakdown: {}, month_breakdown: {},
+  createdAt: "",
 };
 const EMPTY_SMS_RAWLOGS: DashboardData["smsRawlogs"] = {
   id: 0, datatable: "sms_rawlogs",
   total_sent: 0, total_delivered: 0, total_carrier_rejected: 0,
   total_failed: 0, total_message_sent: 0, total_cost: 0, overall_delivery_rate: 0,
-  carrier_breakdown: {}, month_breakdown: {}, createdAt: "",
+  carrier_breakdown: {}, month_breakdown: {}, week_breakdown: {}, createdAt: "",
 };
 const EMPTY_SMS_INBOUND: DashboardData["smsInbound"] = {
   id: 0, datatable: "sms_inbound_rawlogs",
@@ -25,6 +27,11 @@ const EMPTY_FORTH_DEALS: DashboardData["forthDeals"] = {
   summary: { total_deals: 0, total_debt: 0, total_current_payments: 0, total_revenue: 0 },
   month_breakdown: [], week_breakdown: [],
   source_lead_breakdown: [], deal_type_breakdown: [], createdAt: "",
+};
+const EMPTY_RING_CENTRAL: DashboardData["ringCentral"] = {
+  id: 0, datatable: "ring_central",
+  summary: { total_calls: 0, answered_calls: 0, missed_calls: 0, total_duration: 0, total_duration_mins: 0, answer_rate: 0, avg_duration: 0 },
+  leadsource_breakdown: [], month_breakdown: [], week_breakdown: [], createdAt: "",
 };
 
 interface UseDashboardReturn {
@@ -57,10 +64,11 @@ export function useDashboard(): UseDashboardReturn {
         (raw.find((item) => item.datatable === key) as T);
 
       const normalized: DashboardData = {
-        smsQueue:   find("sms_queue")           ?? EMPTY_SMS_QUEUE,
-        smsRawlogs: find("sms_rawlogs")         ?? EMPTY_SMS_RAWLOGS,
-        smsInbound: find("sms_inbound_rawlogs") ?? EMPTY_SMS_INBOUND,
-        forthDeals: find("forth_deals")         ?? EMPTY_FORTH_DEALS,
+        smsQueue:    find("sms_queue")           ?? EMPTY_SMS_QUEUE,
+        smsRawlogs:  find("sms_rawlogs")         ?? EMPTY_SMS_RAWLOGS,
+        smsInbound:  find("sms_inbound_rawlogs") ?? EMPTY_SMS_INBOUND,
+        forthDeals:  find("forth_deals")         ?? EMPTY_FORTH_DEALS,
+        ringCentral: find("ring_central")        ?? EMPTY_RING_CENTRAL,
       };
 
       setData(normalized);

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export const SECTION_IDS = ["system-queue", "forth-deals", "sms-inbound", "sms-performance"] as const;
+export const SECTION_IDS = ["system-queue", "forth-deals", "ring-central", "sms-inbound", "sms-performance"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
 export function useActiveSection(): SectionId {
