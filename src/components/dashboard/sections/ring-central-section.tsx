@@ -119,6 +119,37 @@ export function RingCentralSection({ data, isLoading }: Props) {
   );
 }
 
+function LeadSourceStats({ ls }: { ls: RingCentralLeadSource }) {
+  return (
+    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+      <div>
+        <p className="text-[10px] text-[var(--muted-foreground)]">Total Calls</p>
+        <p className="font-semibold tabular-nums">{ls.total_calls.toLocaleString()}</p>
+      </div>
+      <div>
+        <p className="text-[10px] text-[var(--muted-foreground)]">Answered</p>
+        <p className="font-semibold tabular-nums text-green-600">{ls.answered_calls.toLocaleString()}</p>
+      </div>
+      <div>
+        <p className="text-[10px] text-[var(--muted-foreground)]">Missed</p>
+        <p className="font-semibold tabular-nums text-red-500">{ls.missed_calls.toLocaleString()}</p>
+      </div>
+      <div>
+        <p className="text-[10px] text-[var(--muted-foreground)]">Answer Rate</p>
+        <p className="font-semibold tabular-nums">{ls.answer_rate.toFixed(1)}%</p>
+      </div>
+      <div>
+        <p className="text-[10px] text-[var(--muted-foreground)]">Duration</p>
+        <p className="font-semibold tabular-nums">{ls.total_duration_mins.toLocaleString()} min</p>
+      </div>
+      <div>
+        <p className="text-[10px] text-[var(--muted-foreground)]">Avg Duration</p>
+        <p className="font-semibold tabular-nums">{ls.avg_duration.toFixed(0)}s</p>
+      </div>
+    </div>
+  );
+}
+
 function MonthBreakdown({ months }: { months: import("@/types").RingCentralMonthEntry[] }) {
   const [selected, setSelected] = useState(months[0].period);
   const entry = months.find((m) => m.period === selected) ?? months[0];
@@ -191,37 +222,6 @@ function PeriodStats({ entry }: { entry: import("@/types").RingCentralSummary })
       <StatBox label="Missed" value={entry.missed_calls.toLocaleString()} valueClassName="text-red-500" />
       <StatBox label="Duration" value={`${entry.total_duration_mins.toLocaleString()} min`} />
       <StatBox label="Avg Duration" value={`${entry.avg_duration.toFixed(0)}s`} />
-    </div>
-  );
-}
-
-function LeadSourceStats({ ls }: { ls: RingCentralLeadSource }) {
-  return (
-    <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-      <div>
-        <p className="text-[10px] text-[var(--muted-foreground)]">Total Calls</p>
-        <p className="font-semibold tabular-nums">{ls.total_calls.toLocaleString()}</p>
-      </div>
-      <div>
-        <p className="text-[10px] text-[var(--muted-foreground)]">Answered</p>
-        <p className="font-semibold tabular-nums text-green-600">{ls.answered_calls.toLocaleString()}</p>
-      </div>
-      <div>
-        <p className="text-[10px] text-[var(--muted-foreground)]">Missed</p>
-        <p className="font-semibold tabular-nums text-red-500">{ls.missed_calls.toLocaleString()}</p>
-      </div>
-      <div>
-        <p className="text-[10px] text-[var(--muted-foreground)]">Answer Rate</p>
-        <p className="font-semibold tabular-nums">{ls.answer_rate.toFixed(1)}%</p>
-      </div>
-      <div>
-        <p className="text-[10px] text-[var(--muted-foreground)]">Duration</p>
-        <p className="font-semibold tabular-nums">{ls.total_duration_mins.toLocaleString()} min</p>
-      </div>
-      <div>
-        <p className="text-[10px] text-[var(--muted-foreground)]">Avg Duration</p>
-        <p className="font-semibold tabular-nums">{ls.avg_duration.toFixed(0)}s</p>
-      </div>
     </div>
   );
 }

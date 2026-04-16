@@ -1,3 +1,12 @@
+// ─── settings ─────────────────────────────────────────────────────────────────
+
+export interface RawSettings {
+  id: 0;
+  settings: {
+    sms_queue_toggle: "true" | "false";
+  };
+}
+
 // ─── sms_queue ────────────────────────────────────────────────────────────────
 
 export interface RawSmsQueue {
@@ -194,6 +203,7 @@ export type RawDatatableItem =
   | RawRingCentral;
 
 export interface DashboardData {
+  settings: RawSettings;
   smsQueue: RawSmsQueue;
   smsRawlogs: RawSmsRawlogs;
   smsInbound: RawSmsInbound;

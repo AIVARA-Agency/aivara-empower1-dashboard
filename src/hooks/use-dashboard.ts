@@ -1,11 +1,15 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import type { DashboardData, RawDatatableItem } from "@/types";
+import type { DashboardData, RawDatatableItem, RawSettings } from "@/types";
 
 const DASHBOARD_API = "/api/dashboard";
+const SMS_TOGGLE_API = "https://n8n.srv1312686.hstgr.cloud/webhook/sms_toggle";
 const REFRESH_INTERVAL = 600_000; // 10 minutes
 
+const EMPTY_SETTINGS: DashboardData["settings"] = {
+  id: 0, settings: { sms_queue_toggle: "false" },
+};
 const EMPTY_SMS_QUEUE: DashboardData["smsQueue"] = {
   id: 0, datatable: "sms_queue", total_queued: 0,
   campaign_breakdown: {}, carrier_breakdown: {}, action_breakdown: {}, month_breakdown: {},
@@ -41,6 +45,8 @@ interface UseDashboardReturn {
   isRefreshing: boolean;
   lastUpdated: Date | null;
   refresh: () => void;
+  toggleSmsQueue: () => Promise<void>;
+  isTogglingQueue: boolean;
 }
 
 export function useDashboard(): UseDashboardReturn {
@@ -49,6 +55,7 @@ export function useDashboard(): UseDashboardReturn {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const [isTogglingQueue, setIsTogglingQueue] = useState(false);
 
   const fetchData = useCallback(async (isManualRefresh = false) => {
     if (isManualRefresh) setIsRefreshing(true);
@@ -58,17 +65,20 @@ export function useDashboard(): UseDashboardReturn {
       const res = await fetch(DASHBOARD_API, { cache: "no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
 
-      const raw: RawDatatableItem[] = await res.json();
+      const raw: (RawDatatableItem | RawSettings)[] = await res.json();
 
       const find = <T extends RawDatatableItem>(key: T["datatable"]): T =>
-        (raw.find((item) => item.datatable === key) as T);
+        (raw.find((item) => "datatable" in item && item.datatable === key) as T);
+
+      const settingsItem = raw.find((item) => "settings" in item) as RawSettings | undefined;
 
       const normalized: DashboardData = {
-        smsQueue:    find("sms_queue")           ?? EMPTY_SMS_QUEUE,
-        smsRawlogs:  find("sms_rawlogs")         ?? EMPTY_SMS_RAWLOGS,
+        settings:    settingsItem              ?? EMPTY_SETTINGS,
+        smsQueue:    find("sms_queue")         ?? EMPTY_SMS_QUEUE,
+        smsRawlogs:  find("sms_rawlogs")       ?? EMPTY_SMS_RAWLOGS,
         smsInbound:  find("sms_inbound_rawlogs") ?? EMPTY_SMS_INBOUND,
-        forthDeals:  find("forth_deals")         ?? EMPTY_FORTH_DEALS,
-        ringCentral: find("ring_central")        ?? EMPTY_RING_CENTRAL,
+        forthDeals:  find("forth_deals")       ?? EMPTY_FORTH_DEALS,
+        ringCentral: find("ring_central")      ?? EMPTY_RING_CENTRAL,
       };
 
       setData(normalized);
@@ -81,6 +91,33 @@ export function useDashboard(): UseDashboardReturn {
     }
   }, []);
 
+  const toggleSmsQueue = useCallback(async () => {
+    if (!data || isTogglingQueue) return;
+    const current = data.settings.settings.sms_queue_toggle === "true";
+    const next = current ? "false" : "true";
+
+    setIsTogglingQueue(true);
+    // Optimistic update
+    setData((prev) =>
+      prev ? { ...prev, settings: { ...prev.settings, settings: { sms_queue_toggle: next } } } : prev
+    );
+
+    try {
+      await fetch(SMS_TOGGLE_API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sms_queue_toggle: next }),
+      });
+    } catch {
+      // Revert on failure
+      setData((prev) =>
+        prev ? { ...prev, settings: { ...prev.settings, settings: { sms_queue_toggle: current ? "true" : "false" } } } : prev
+      );
+    } finally {
+      setIsTogglingQueue(false);
+    }
+  }, [data, isTogglingQueue]);
+
   useEffect(() => { fetchData(); }, [fetchData]);
 
   useEffect(() => {
@@ -90,5 +127,5 @@ export function useDashboard(): UseDashboardReturn {
 
   const refresh = useCallback(() => fetchData(true), [fetchData]);
 
-  return { data, error, isLoading, isRefreshing, lastUpdated, refresh };
+  return { data, error, isLoading, isRefreshing, lastUpdated, refresh, toggleSmsQueue, isTogglingQueue };
 }

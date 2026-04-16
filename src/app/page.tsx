@@ -11,7 +11,7 @@ import { SmsPerformanceSection } from "@/components/dashboard/sections/sms-perfo
 import { useDashboard } from "@/hooks/use-dashboard";
 
 export default function DashboardPage() {
-  const { data, error, isLoading, isRefreshing, lastUpdated, refresh } = useDashboard();
+  const { data, error, isLoading, isRefreshing, lastUpdated, refresh, toggleSmsQueue, isTogglingQueue } = useDashboard();
 
   return (
     <div className="flex min-h-screen bg-[var(--background)]">
@@ -43,7 +43,7 @@ export default function DashboardPage() {
           <div className="p-4 lg:p-6 space-y-20">
             {data ? (
               <>
-                <SystemQueueSection data={data} isLoading={false} />
+                <SystemQueueSection data={data} isLoading={false} onToggle={toggleSmsQueue} isToggling={isTogglingQueue} />
                 <ForthDealsSection data={data} isLoading={false} />
                 <RingCentralSection data={data} isLoading={false} />
                 <SmsInboundSection data={data} isLoading={false} />
@@ -51,7 +51,7 @@ export default function DashboardPage() {
               </>
             ) : (
               <>
-                <SystemQueueSection data={null as never} isLoading={true} />
+                <SystemQueueSection data={null as never} isLoading={true} onToggle={toggleSmsQueue} isToggling={false} />
                 <ForthDealsSection data={null as never} isLoading={true} />
                 <RingCentralSection data={null as never} isLoading={true} />
                 <SmsInboundSection data={null as never} isLoading={true} />
