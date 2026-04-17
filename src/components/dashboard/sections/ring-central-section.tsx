@@ -272,10 +272,9 @@ function StatBox({ label, value, valueClassName }: { label: string; value: strin
 function SectionHeading() {
   return (
     <div className="border-b border-[var(--border)] pb-4">
-      <h2 className="text-xl font-bold text-[var(--foreground)]">Ring Central Performance</h2>
+      <h2 className="text-xl font-bold text-[var(--foreground)]">Call Performance</h2>
       <p className="text-sm text-[var(--muted-foreground)] mt-0.5">
-        Call volume, answer rates, and lead source breakdown —{" "}
-        <span className="italic">data is fetched at the end of the day</span>
+        Call volume, answer rates, and performance by lead source
       </p>
     </div>
   );

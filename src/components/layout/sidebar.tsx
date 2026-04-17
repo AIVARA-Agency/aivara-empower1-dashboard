@@ -1,17 +1,20 @@
 "use client";
 
 import Image from "next/image";
-import { TrendingUp, X, Menu, ListOrdered, Inbox, BarChart2, Phone } from "lucide-react";
+import { TrendingUp, X, Menu, Inbox, BarChart2, Phone, LayoutDashboard, Power, Users, Megaphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { useActiveSection, type SectionId } from "@/hooks/use-active-section";
 
 const navItems = [
-  { label: "System Queue",        href: "#system-queue",    id: "system-queue" as SectionId,    icon: ListOrdered },
-  { label: "Forth Deals",         href: "#forth-deals",     id: "forth-deals" as SectionId,     icon: TrendingUp },
-  { label: "Ring Central",        href: "#ring-central",    id: "ring-central" as SectionId,    icon: Phone },
-  { label: "SMS Inbound",         href: "#sms-inbound",     id: "sms-inbound" as SectionId,     icon: Inbox },
-  { label: "SMS Performance",     href: "#sms-performance", id: "sms-performance" as SectionId, icon: BarChart2 },
+  { label: "Overview",              href: "#roi-overview",          id: "roi-overview" as SectionId,          icon: LayoutDashboard },
+  { label: "Campaign Control",      href: "#campaign-control",      id: "campaign-control" as SectionId,      icon: Power },
+  { label: "Campaign Performance",  href: "#campaign-performance",  id: "campaign-performance" as SectionId,  icon: Megaphone },
+  { label: "Deal Breakdown",        href: "#forth-deals",           id: "forth-deals" as SectionId,           icon: TrendingUp },
+  { label: "Rep Performance",       href: "#rep-performance",       id: "rep-performance" as SectionId,       icon: Users },
+  { label: "Call Performance",      href: "#ring-central",          id: "ring-central" as SectionId,          icon: Phone },
+  { label: "SMS Inbound",           href: "#sms-inbound",           id: "sms-inbound" as SectionId,           icon: Inbox },
+  { label: "SMS Performance",       href: "#sms-performance",       id: "sms-performance" as SectionId,       icon: BarChart2 },
 ];
 
 interface SidebarProps {

@@ -100,6 +100,16 @@ export interface ForthDealsSummary {
   total_debt: number;
   total_current_payments: number;
   total_revenue: number;
+  total_campaign_spend?: number; // Commio + Drop Cowboy + labor costs
+}
+
+// Rep-level deal tracking (populated when n8n sends by_rep data)
+export interface ForthRepEntry {
+  rep_name: string;
+  total_deals: number;
+  total_revenue: number;
+  total_calls?: number;
+  avg_deal_size?: number;
 }
 
 // Shared sub-entry shapes used inside breakdowns
@@ -120,6 +130,7 @@ export interface ForthMonthEntry {
   total_revenue: number;
   by_deal_type: ForthDealTypeEntry[];
   by_source_lead: ForthSourceLeadEntry[];
+  by_rep?: ForthRepEntry[];
 }
 
 export interface ForthWeekEntry {
@@ -153,6 +164,7 @@ export interface RawForthDeals {
   week_breakdown: ForthWeekEntry[];
   source_lead_breakdown: ForthSourceLead[];
   deal_type_breakdown: ForthDealType[];
+  rep_breakdown?: ForthRepEntry[];
   createdAt: string;
 }
 

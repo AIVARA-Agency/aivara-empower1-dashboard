@@ -3,10 +3,13 @@
 import { Sidebar } from "@/components/layout/sidebar";
 import { Header } from "@/components/layout/header";
 import { CronBanner } from "@/components/dashboard/cron-banner";
-import { SystemQueueSection } from "@/components/dashboard/sections/system-queue-section";
+import { RoiOverviewSection } from "@/components/dashboard/sections/roi-overview-section";
+import { CampaignControlSection } from "@/components/dashboard/sections/campaign-control-section";
+import { CampaignPerformanceSection } from "@/components/dashboard/sections/campaign-performance-section";
 import { ForthDealsSection } from "@/components/dashboard/sections/forth-deals-section";
-import { SmsInboundSection } from "@/components/dashboard/sections/sms-inbound-section";
+import { RepPerformanceSection } from "@/components/dashboard/sections/rep-performance-section";
 import { RingCentralSection } from "@/components/dashboard/sections/ring-central-section";
+import { SmsInboundSection } from "@/components/dashboard/sections/sms-inbound-section";
 import { SmsPerformanceSection } from "@/components/dashboard/sections/sms-performance-section";
 import { useDashboard } from "@/hooks/use-dashboard";
 
@@ -40,19 +43,25 @@ export default function DashboardPage() {
             </div>
           )}
 
-          <div className="p-4 lg:p-6 space-y-20">
+          <div className="p-4 lg:p-6 space-y-16">
             {data ? (
               <>
-                <SystemQueueSection data={data} isLoading={false} onToggle={toggleSmsQueue} isToggling={isTogglingQueue} />
+                <RoiOverviewSection data={data} isLoading={false} />
+                <CampaignControlSection data={data} isLoading={false} onToggle={toggleSmsQueue} isToggling={isTogglingQueue} />
+                <CampaignPerformanceSection isLoading={false} />
                 <ForthDealsSection data={data} isLoading={false} />
+                <RepPerformanceSection data={data} isLoading={false} />
                 <RingCentralSection data={data} isLoading={false} />
                 <SmsInboundSection data={data} isLoading={false} />
                 <SmsPerformanceSection data={data} isLoading={false} />
               </>
             ) : (
               <>
-                <SystemQueueSection data={null as never} isLoading={true} onToggle={toggleSmsQueue} isToggling={false} />
+                <RoiOverviewSection data={null as never} isLoading={true} />
+                <CampaignControlSection data={null as never} isLoading={true} onToggle={toggleSmsQueue} isToggling={false} />
+                <CampaignPerformanceSection isLoading={true} />
                 <ForthDealsSection data={null as never} isLoading={true} />
+                <RepPerformanceSection data={null as never} isLoading={true} />
                 <RingCentralSection data={null as never} isLoading={true} />
                 <SmsInboundSection data={null as never} isLoading={true} />
                 <SmsPerformanceSection data={null as never} isLoading={true} />

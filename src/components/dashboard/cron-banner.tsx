@@ -15,10 +15,9 @@ export function CronBanner() {
     >
       <Clock className="h-4 w-4 shrink-0" style={{ color: "var(--primary)" }} />
       <span className="text-[var(--muted-foreground)]">
-        <span className="font-medium text-[var(--foreground)]">Cached data</span>
-        {" — "}processed by a scheduled job running daily at{" "}
-        <span className="font-medium text-[var(--foreground)]">6 AM, 12 PM, 3 PM, and 6 PM</span>.
-        What you&apos;re seeing reflects the last completed run.
+        Data refreshes automatically at{" "}
+        <span className="font-medium text-[var(--foreground)]">6 AM, 12 PM, 3 PM, and 6 PM</span>
+        {" "}&mdash; numbers shown are from the most recent refresh.
       </span>
     </div>
   );

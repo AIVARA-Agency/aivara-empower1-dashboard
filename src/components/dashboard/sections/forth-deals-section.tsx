@@ -5,10 +5,8 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from "recharts";
 import { CHART_COLORS } from "@/lib/chart-colors";
-import { DollarSign, TrendingUp, CreditCard, Banknote } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { StatsCard } from "@/components/dashboard/stats-card";
 import type { DashboardData, ForthMonthEntry, ForthWeekEntry } from "@/types";
 
 const TOOLTIP_STYLE = {
@@ -45,7 +43,7 @@ export function ForthDealsSection({ data, isLoading }: Props) {
   }
 
   const { forthDeals } = data;
-  const { summary, source_lead_breakdown, deal_type_breakdown, month_breakdown, week_breakdown } = forthDeals;
+  const { source_lead_breakdown, deal_type_breakdown, month_breakdown, week_breakdown } = forthDeals;
 
   const sortedMonths = [...month_breakdown].sort((a, b) => a.period.localeCompare(b.period));
   const sortedWeeks  = [...week_breakdown].sort((a, b) => a.period.localeCompare(b.period));
@@ -112,40 +110,7 @@ export function ForthDealsSection({ data, isLoading }: Props) {
         <WeekBreakdown weeks={sortedWeeks} />
       )}
 
-      {/* ── Summary ── */}
-      <div className="space-y-3">
-        <SubHeading label="Summary" count={4} />
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-4">
-          <StatsCard
-            title="Total Deals"
-            value={summary.total_deals.toLocaleString()}
-            subtitle="All processed deals"
-            icon={TrendingUp}
-            iconClassName="bg-violet-100 text-violet-600"
-          />
-          <StatsCard
-            title="Total Debt"
-            value={fmtCurrencyShort(summary.total_debt)}
-            subtitle="Current client debt"
-            icon={CreditCard}
-            iconClassName="bg-red-100 text-red-600"
-          />
-          <StatsCard
-            title="Current Payments"
-            value={fmtCurrency(summary.total_current_payments)}
-            subtitle="Client payment amounts"
-            icon={Banknote}
-            iconClassName="bg-amber-100 text-amber-600"
-          />
-          <StatsCard
-            title="Total Revenue"
-            value={fmtCurrencyShort(summary.total_revenue)}
-            subtitle="Revenue across all deals"
-            icon={DollarSign}
-            iconClassName="bg-green-100 text-green-600"
-          />
-        </div>
-      </div>
+      {/* Summary stats now live in ROI Overview section at top of dashboard */}
     </section>
   );
 }
@@ -155,8 +120,8 @@ export function ForthDealsSection({ data, isLoading }: Props) {
 function SectionHeading() {
   return (
     <div className="border-b border-[var(--border)] pb-4">
-      <h2 className="text-xl font-bold text-[var(--foreground)]">Forth Deals</h2>
-      <p className="text-sm text-[var(--muted-foreground)] mt-0.5">Deal pipeline and revenue overview</p>
+      <h2 className="text-xl font-bold text-[var(--foreground)]">Deal Breakdown</h2>
+      <p className="text-sm text-[var(--muted-foreground)] mt-0.5">Revenue by lead source, deal type, and time period</p>
     </div>
   );
 }

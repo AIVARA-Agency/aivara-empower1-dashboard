@@ -94,34 +94,6 @@ export function SmsPerformanceSection({ data, isLoading }: Props) {
         />
       </div>
 
-      {/* Carrier Detail */}
-      {carriers.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-[var(--foreground)] mb-3">Carrier Detail</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-            {carriers.map(([name, s], i) => (
-              <Card key={name}>
-                <CardContent className="pt-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
-                    <p className="text-sm font-bold text-[var(--foreground)] truncate">{name}</p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
-                    <Stat label="Sent" value={s.total_sent.toLocaleString()} />
-                    <Stat label="Delivered" value={s.delivered.toLocaleString()} valueClassName="text-green-600" />
-                    <Stat label="Rejected" value={s.carrier_rejected.toLocaleString()} valueClassName="text-red-500" />
-                    <Stat label="Delivery Rate" value={`${s.delivery_rate.toFixed(1)}%`} />
-                    <div className="col-span-2">
-                      <Stat label="Cost" value={fmtCurrency(s.cost)} />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Month Breakdown — dropdown */}
       {sortedMonths.length > 0 && (
         <MonthBreakdown months={sortedMonths} />
@@ -130,6 +102,11 @@ export function SmsPerformanceSection({ data, isLoading }: Props) {
       {/* Week Breakdown — dropdown */}
       {sortedWeeks.length > 0 && (
         <WeekBreakdown weeks={sortedWeeks} />
+      )}
+
+      {/* Carrier Detail — collapsed by default, low priority */}
+      {carriers.length > 0 && (
+        <CarrierDetailCollapsible carriers={carriers} />
       )}
     </section>
   );
@@ -249,6 +226,46 @@ function CarrierTable({ rows }: { rows: [string, SmsCarrierStats][] }) {
   );
 }
 
+function CarrierDetailCollapsible({ carriers }: { carriers: [string, SmsCarrierStats][] }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border border-[var(--border)] rounded-lg overflow-hidden">
+      <button
+        onClick={() => setOpen(!open)}
+        className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[var(--muted-foreground)] hover:bg-[var(--muted)] transition-colors"
+      >
+        <span>Carrier Detail ({carriers.length} carriers)</span>
+        <span className="text-xs">{open ? "Hide" : "Show"}</span>
+      </button>
+      {open && (
+        <div className="px-4 pb-4 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            {carriers.map(([name, s], i) => (
+              <Card key={name}>
+                <CardContent className="pt-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: CHART_COLORS[i % CHART_COLORS.length] }} />
+                    <p className="text-sm font-bold text-[var(--foreground)] truncate">{name}</p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                    <Stat label="Sent" value={s.total_sent.toLocaleString()} />
+                    <Stat label="Delivered" value={s.delivered.toLocaleString()} valueClassName="text-green-600" />
+                    <Stat label="Rejected" value={s.carrier_rejected.toLocaleString()} valueClassName="text-red-500" />
+                    <Stat label="Delivery Rate" value={`${s.delivery_rate.toFixed(1)}%`} />
+                    <div className="col-span-2">
+                      <Stat label="Cost" value={fmtCurrency(s.cost)} />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function StatBox({ label, value, valueClassName }: { label: string; value: string; valueClassName?: string }) {
   return (
     <div className="rounded-md border border-[var(--border)] bg-[var(--muted)] px-3 py-2">
@@ -270,8 +287,8 @@ function Stat({ label, value, valueClassName }: { label: string; value: string; 
 function SectionHeading() {
   return (
     <div className="border-b border-[var(--border)] pb-4">
-      <h2 className="text-xl font-bold text-[var(--foreground)]">SMS Performance</h2>
-      <p className="text-sm text-[var(--muted-foreground)] mt-0.5">Outbound delivery stats, carrier breakdown, and trends</p>
+      <h2 className="text-xl font-bold text-[var(--foreground)]">SMS Outbound</h2>
+      <p className="text-sm text-[var(--muted-foreground)] mt-0.5">Messages sent, delivery rates, and cost</p>
     </div>
   );
 }
