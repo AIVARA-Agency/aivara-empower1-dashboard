@@ -46,22 +46,22 @@ export default function DashboardPage() {
           <div className="p-4 lg:p-6 space-y-16">
             {data ? (
               <>
+                <RepPerformanceSection data={data} isLoading={false} />
                 <RoiOverviewSection data={data} isLoading={false} />
                 <CampaignControlSection data={data} isLoading={false} onToggle={toggleSmsQueue} isToggling={isTogglingQueue} />
                 <CampaignPerformanceSection isLoading={false} />
                 <ForthDealsSection data={data} isLoading={false} />
-                <RepPerformanceSection data={data} isLoading={false} />
                 <RingCentralSection data={data} isLoading={false} />
                 <SmsInboundSection data={data} isLoading={false} />
                 <SmsPerformanceSection data={data} isLoading={false} />
               </>
             ) : (
               <>
+                <RepPerformanceSection data={null as never} isLoading={true} />
                 <RoiOverviewSection data={null as never} isLoading={true} />
                 <CampaignControlSection data={null as never} isLoading={true} onToggle={toggleSmsQueue} isToggling={false} />
                 <CampaignPerformanceSection isLoading={true} />
                 <ForthDealsSection data={null as never} isLoading={true} />
-                <RepPerformanceSection data={null as never} isLoading={true} />
                 <RingCentralSection data={null as never} isLoading={true} />
                 <SmsInboundSection data={null as never} isLoading={true} />
                 <SmsPerformanceSection data={null as never} isLoading={true} />

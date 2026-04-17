@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-export const SECTION_IDS = ["roi-overview", "campaign-control", "campaign-performance", "forth-deals", "rep-performance", "ring-central", "sms-inbound", "sms-performance"] as const;
+export const SECTION_IDS = ["rep-performance", "roi-overview", "campaign-control", "campaign-performance", "forth-deals", "ring-central", "sms-inbound", "sms-performance"] as const;
 export type SectionId = (typeof SECTION_IDS)[number];
 
 export function useActiveSection(): SectionId {
-  const [active, setActive] = useState<SectionId>("roi-overview");
+  const [active, setActive] = useState<SectionId>("rep-performance");
 
   useEffect(() => {
     const ratioMap = new Map<SectionId, number>();
