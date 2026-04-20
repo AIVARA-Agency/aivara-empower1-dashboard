@@ -10,6 +10,17 @@ import { CHART_COLORS } from "@/lib/chart-colors";
 
 interface Props { data: DashboardData; isLoading: boolean; }
 
+/**
+ * The raw `missed_calls` field from the Ring Central webhook counts ring
+ * attempts per agent extension, not unique conversations. A single inbound
+ * call ringing 11 agents = 10 false "missed" entries if one agent picks up.
+ * We compute missed as (total - answered) instead so the math matches the
+ * answer rate and represents real missed conversations.
+ */
+function realMissed(x: { total_calls: number; answered_calls: number }): number {
+  return Math.max(0, x.total_calls - x.answered_calls);
+}
+
 export function RingCentralSection({ data, isLoading }: Props) {
   if (isLoading) {
     return (
@@ -94,7 +105,7 @@ export function RingCentralSection({ data, isLoading }: Props) {
           />
           <StatsCard
             title="Missed"
-            value={summary.missed_calls.toLocaleString()}
+            value={realMissed(summary).toLocaleString()}
             subtitle="Unanswered calls"
             icon={XCircle}
             iconClassName="bg-red-100 text-red-600"
@@ -132,7 +143,7 @@ function LeadSourceStats({ ls }: { ls: RingCentralLeadSource }) {
       </div>
       <div>
         <p className="text-[10px] text-[var(--muted-foreground)]">Missed</p>
-        <p className="font-semibold tabular-nums text-red-500">{ls.missed_calls.toLocaleString()}</p>
+        <p className="font-semibold tabular-nums text-red-500">{realMissed(ls).toLocaleString()}</p>
       </div>
       <div>
         <p className="text-[10px] text-[var(--muted-foreground)]">Answer Rate</p>
@@ -219,7 +230,7 @@ function PeriodStats({ entry }: { entry: import("@/types").RingCentralSummary })
       <StatBox label="Total Calls" value={entry.total_calls.toLocaleString()} />
       <StatBox label="Answered" value={entry.answered_calls.toLocaleString()} valueClassName="text-green-600" />
       <StatBox label="Answer Rate" value={`${entry.answer_rate.toFixed(1)}%`} />
-      <StatBox label="Missed" value={entry.missed_calls.toLocaleString()} valueClassName="text-red-500" />
+      <StatBox label="Missed" value={realMissed(entry).toLocaleString()} valueClassName="text-red-500" />
       <StatBox label="Duration" value={`${entry.total_duration_mins.toLocaleString()} min`} />
       <StatBox label="Avg Duration" value={`${entry.avg_duration.toFixed(0)}s`} />
     </div>
@@ -248,7 +259,7 @@ function LeadSourceTable({ rows }: { rows: RingCentralLeadSource[] }) {
                 <td className="px-2 py-1.5 font-medium text-[var(--foreground)]">{r.lead_source}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{r.total_calls.toLocaleString()}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums text-green-600">{r.answered_calls.toLocaleString()}</td>
-                <td className="px-2 py-1.5 text-right tabular-nums text-red-500">{r.missed_calls.toLocaleString()}</td>
+                <td className="px-2 py-1.5 text-right tabular-nums text-red-500">{realMissed(r).toLocaleString()}</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{r.answer_rate.toFixed(1)}%</td>
                 <td className="px-2 py-1.5 text-right tabular-nums">{r.avg_duration.toFixed(0)}s</td>
               </tr>
